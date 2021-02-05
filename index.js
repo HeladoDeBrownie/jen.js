@@ -4,10 +4,17 @@ const Rule = class {
     }
 
     evaluate(defaultValue) {
-        let untriedClauses = cloneArray(this.clauses)
+        const untriedClauses = cloneArray(this.clauses)
+
+        const untriedClauseWeights = untriedClauses.map((clause) =>
+            clause.evaluateWeight()
+        )
 
         while (untriedClauses.length > 0) {
-            const clauseToTry = drawRandomElement(untriedClauses)
+            const clauseToTry = drawWeightedRandomElement(
+                untriedClauses,
+                untriedClauseWeights,
+            )
 
             try {
                 return clauseToTry.evaluate()
@@ -28,9 +35,21 @@ const Rule = class {
 
 const cloneArray = (array) => array.slice()
 
-const drawRandomElement = (array) => {
-    const randomIndex = randomInteger(0, array.length - 1)
-    return array.splice(randomIndex, 1)[0]
+const drawWeightedRandomElement = (elements, weights) => {
+    // Precondition: elements and weights are of the same length, all weights
+    // are natural numbers.
+
+    const weightSum = weights.reduce((sumSoFar, weight) => sumSoFar + weight)
+    const randomPartialWeightSum = randomInteger(0, weightSum - 1)
+    let currentIndex = -1
+    let weightSumSoFar = 0
+
+    do {
+        currentIndex++
+        weightSumSoFar += weights[currentIndex]
+    } while (weightSumSoFar <= randomPartialWeightSum)
+
+    return elements.splice(currentIndex, 1)[0]
 }
 
 const randomInteger = (minimum, maximum) =>
@@ -38,10 +57,14 @@ const randomInteger = (minimum, maximum) =>
     Math.floor(Math.random() * (maximum - minimum + 1) + minimum)
 
 const Clause = class {
-    constructor(value) {
+    constructor({value, weight}) {
         this.evaluate =
             typeof value === 'function' ? value
                                         : () => value
+
+        this.evaluateWeight =
+            typeof weight === 'function' ? weight
+                                         : () => weight
     }
 }
 
