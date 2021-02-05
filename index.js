@@ -3,7 +3,7 @@ const Rule = class {
         this.clauses = clauses
     }
 
-    evaluate(defaultValue = defaultValueSentinel) {
+    evaluate(defaultValue) {
         let untriedClauses = cloneArray(this.clauses)
 
         while (untriedClauses.length > 0) {
@@ -18,15 +18,13 @@ const Rule = class {
             }
         }
 
-        if (defaultValue === defaultValueSentinel) {
+        if (arguments.length < 1) {
             backtrack('All clauses backtracked.')
         } else {
             return defaultValue
         }
     }
 }
-
-const defaultValueSentinel = Symbol()
 
 const cloneArray = (array) => array.slice()
 
