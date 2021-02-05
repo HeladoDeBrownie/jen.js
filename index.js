@@ -49,6 +49,7 @@ const drawWeightedRandomElement = (elements, weights) => {
         weightSumSoFar += weights[currentIndex]
     } while (weightSumSoFar <= randomPartialWeightSum)
 
+    weights.splice(currentIndex, 1)
     return elements.splice(currentIndex, 1)[0]
 }
 
