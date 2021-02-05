@@ -3,13 +3,37 @@ const Rule = class {
         this.clauses = clauses
     }
 
-    evaluate() {
-        return randomElement(this.clauses).evaluate()
+    evaluate(defaultValue = defaultValueSentinel) {
+        let untriedClauses = cloneArray(this.clauses)
+
+        while (untriedClauses.length > 0) {
+            const clauseToTry = drawRandomElement(untriedClauses)
+
+            try {
+                return clauseToTry.evaluate()
+            } catch (error) {
+                if (!(error instanceof Backtrack)) {
+                    throw error
+                }
+            }
+        }
+
+        if (defaultValue === defaultValueSentinel) {
+            backtrack('All clauses backtracked.')
+        } else {
+            return defaultValue
+        }
     }
 }
 
-const randomElement = (elements) =>
-    elements[randomInteger(0, elements.length - 1)]
+const defaultValueSentinel = Symbol()
+
+const cloneArray = (array) => array.slice()
+
+const drawRandomElement = (array) => {
+    const randomIndex = randomInteger(0, array.length - 1)
+    return array.splice(randomIndex, 1)[0]
+}
 
 const randomInteger = (minimum, maximum) =>
     // Precondition: minimum and maximum are integers, maximum > minimum.
@@ -23,7 +47,18 @@ const Clause = class {
     }
 }
 
+const backtrack = (message) => { throw new Backtrack(message) }
+
+const Backtrack = class extends Error {
+    constructor(message) {
+        super(message === undefined ? 'A backtrack was signaled.'
+                                    : `A backtrack was signaled: ${message}`)
+    }
+}
+
 module.exports = {
     Rule,
     Clause,
+    backtrack,
+    Backtrack,
 }
