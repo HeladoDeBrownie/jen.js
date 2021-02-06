@@ -9,6 +9,7 @@ const RuleState = class {
     }
 
     removeFrame() {
+        this.assertIsInRuleEvaluation()
         this.stack.pop()
     }
 
