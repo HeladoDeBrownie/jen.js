@@ -13,7 +13,7 @@ const RuleState = class {
     }
 
     get(key, defaultValue) {
-        this.assertInRuleEvaluation()
+        this.assertIsInRuleEvaluation()
 
         for (const frame of this.stack) {
             if (frame.has(key)) {
@@ -29,12 +29,16 @@ const RuleState = class {
     }
 
     set(key, newValue) {
-        this.assertInRuleEvaluation()
+        this.assertIsInRuleEvaluation()
         this.stack[this.stack.length - 1].set(key, newValue)
     }
 
-    assertInRuleEvaluation() {
-        if (this.stack.length === 0) {
+    isInRuleEvaluation() {
+        return this.stack.length > 0
+    }
+
+    assertIsInRuleEvaluation() {
+        if (!this.isInRuleEvaluation()) {
             throw new RuleStateAccessError
         }
     }
@@ -66,6 +70,12 @@ const Rule = class {
     }
 
     evaluate(defaultValue) {
+        // Add an outermost frame before evaluating any clauses in case a
+        // weight function needs to use rule variables.
+        if (!ruleState.isInRuleEvaluation()) {
+            ruleState.addFrame()
+        }
+
         const untriedClauses = cloneArray(this.clauses)
 
         const untriedClauseWeights = untriedClauses.map((clause) =>
@@ -78,12 +88,16 @@ const Rule = class {
                 untriedClauseWeights,
             )
 
+            ruleState.addFrame()
+
             try {
                 return clauseToTry.evaluate()
             } catch (error) {
                 if (!(error instanceof Backtrack)) {
                     throw error
                 }
+            } finally {
+                ruleState.removeFrame()
             }
         }
 
