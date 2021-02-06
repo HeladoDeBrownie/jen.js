@@ -151,7 +151,7 @@ const randomInteger = (minimum, maximum) =>
     Math.floor(Math.random() * (maximum - minimum + 1) + minimum)
 
 const Clause = class {
-    constructor({value, weight}) {
+    constructor({value, weight = 1}) {
         this.evaluate =
             typeof value === 'function' ? value
                                         : () => value
