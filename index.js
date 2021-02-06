@@ -1,3 +1,65 @@
+const RuleState = class {
+    constructor() {
+        this.stack = []
+        this.stack[Symbol.iterator] = reverseIterator
+    }
+
+    addFrame() {
+        this.stack.push(new Map())
+    }
+
+    removeFrame() {
+        this.stack.pop()
+    }
+
+    get(key, defaultValue) {
+        this.assertInRuleEvaluation()
+
+        for (const frame of this.stack) {
+            if (frame.has(key)) {
+                return frame.get(key)
+            }
+        }
+
+        if (arguments.length >= 2) {
+            return defaultValue
+        } else {
+            throw new RuleStateUninitializedError
+        }
+    }
+
+    set(key, newValue) {
+        this.assertInRuleEvaluation()
+        this.stack[this.stack.length - 1].set(key, newValue)
+    }
+
+    assertInRuleEvaluation() {
+        if (this.stack.length === 0) {
+            throw new RuleStateAccessError
+        }
+    }
+}
+
+const reverseIterator = function*() {
+    for (let index = this.length - 1; index >= 0; index--) {
+        yield this[index]
+    }
+}
+
+const RuleStateUninitializedError = class extends Error {
+    constructor() {
+        super(`Cannot access an uninitialized rule variable.`)
+    }
+}
+
+const RuleStateAccessError = class extends Error {
+    constructor() {
+        super(`Cannot access rule state outside of rule evaluation.`)
+    }
+}
+
+const ruleState = new RuleState()
+
 const Rule = class {
     constructor(...clauses) {
         this.clauses = clauses
