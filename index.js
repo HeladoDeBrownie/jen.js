@@ -107,6 +107,11 @@ const Rule = class {
             return defaultValue
         }
     }
+
+    // This is a hack to allow subrule evaluation to be more succinct.
+    toString() {
+        return this.evaluate()
+    }
 }
 
 const cloneArray = (array) => array.slice()
