@@ -9,7 +9,6 @@ const RuleState = class {
     }
 
     removeFrame() {
-        this.assertIsInRuleEvaluation()
         this.stack.pop()
     }
 
@@ -151,6 +150,20 @@ const Clause = class {
     }
 }
 
+const RuleVariable = class {
+    constructor(defaultValue) {
+        this.defaultValue = defaultValue
+    }
+
+    get() {
+        return ruleState.get(this, this.defaultValue)
+    }
+
+    set(newValue) {
+        ruleState.set(this, newValue)
+    }
+}
+
 const backtrack = (message) => { throw new Backtrack(message) }
 
 const Backtrack = class extends Error {
@@ -163,6 +176,7 @@ const Backtrack = class extends Error {
 module.exports = {
     Rule,
     Clause,
+    RuleVariable,
     backtrack,
     Backtrack,
 }
