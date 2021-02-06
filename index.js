@@ -12,6 +12,10 @@ const RuleState = class {
         this.stack.pop()
     }
 
+    reset() {
+        this.stack.length = 0
+    }
+
     get(key, defaultValue) {
         this.assertIsInRuleEvaluation()
 
@@ -70,9 +74,11 @@ const Rule = class {
     }
 
     evaluate(defaultValue) {
+        const isOutermostEvaluation = !ruleState.isInRuleEvaluation()
+
         // Add an outermost frame before evaluating any clauses in case a
         // weight function needs to use rule variables.
-        if (!ruleState.isInRuleEvaluation()) {
+        if (isOutermostEvaluation) {
             ruleState.addFrame()
         }
 
@@ -82,29 +88,35 @@ const Rule = class {
             clause.evaluateWeight()
         )
 
-        while (untriedClauses.length > 0) {
-            const clauseToTry = drawWeightedRandomElement(
-                untriedClauses,
-                untriedClauseWeights,
-            )
+        try {
+            while (untriedClauses.length > 0) {
+                const clauseToTry = drawWeightedRandomElement(
+                    untriedClauses,
+                    untriedClauseWeights,
+                )
 
-            ruleState.addFrame()
+                ruleState.addFrame()
 
-            try {
-                return clauseToTry.evaluate()
-            } catch (error) {
-                if (!(error instanceof Backtrack)) {
-                    throw error
+                try {
+                    return clauseToTry.evaluate()
+                } catch (error) {
+                    if (error instanceof Backtrack) {
+                        ruleState.removeFrame()
+                    } else {
+                        throw error
+                    }
                 }
-            } finally {
-                ruleState.removeFrame()
             }
-        }
 
-        if (arguments.length < 1) {
-            backtrack('All clauses backtracked.')
-        } else {
-            return defaultValue
+            if (arguments.length < 1) {
+                backtrack('All clauses backtracked.')
+            } else {
+                return defaultValue
+            }
+        } finally {
+            if (isOutermostEvaluation) {
+                ruleState.reset()
+            }
         }
     }
 
