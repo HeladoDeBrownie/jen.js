@@ -28,7 +28,7 @@ const Rule = class {
                     untriedClauseWeights,
                 )
 
-                ruleState.addFrame()
+                ruleState.addFrame(clauseToTry)
 
                 try {
                     return clauseToTry.evaluate()

@@ -4,8 +4,12 @@ const RuleState = class {
         this.stack[Symbol.iterator] = reverseIterator
     }
 
-    addFrame() {
+    addFrame(currentClause = null) {
         this.stack.push(new Map())
+
+        if (arguments.length >= 1) {
+            this.set(currentClauseSymbol, currentClause)
+        }
     }
 
     removeFrame() {
@@ -37,6 +41,10 @@ const RuleState = class {
         this.stack[this.stack.length - 1].set(key, newValue)
     }
 
+    getCurrentClause() {
+        return this.get(currentClauseSymbol, null)
+    }
+
     isInRuleEvaluation() {
         return this.stack.length > 0
     }
@@ -47,6 +55,8 @@ const RuleState = class {
         }
     }
 }
+
+const currentClauseSymbol = Symbol('current clause')
 
 const reverseIterator = function* () {
     for (let index = this.length - 1; index >= 0; index--) {
