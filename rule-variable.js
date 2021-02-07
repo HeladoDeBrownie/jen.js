@@ -16,5 +16,4 @@ const RuleVariable = class {
 
 module.exports = {
     RuleVariable,
-    ruleState,
 }

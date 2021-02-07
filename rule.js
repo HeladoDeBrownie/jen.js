@@ -85,5 +85,4 @@ const randomInteger = (minimum, maximum) =>
 
 module.exports = {
     Rule,
-    ruleState,
 }
